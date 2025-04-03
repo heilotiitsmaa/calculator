@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 import Wrapper from "./components/Wrapper";
 import Screen from "./components/Screen";
 import ButtonBox from "./components/ButtonBox";
@@ -11,9 +12,15 @@ const btnValues = [
   [1, 2, 3, "+"],
   [0, ".", "="],
 ];
+ //lisab tühiku iga 3 nr tagant nt 1000=> 1 000
+const toLocaleString = (num) =>
+  String(num).replace(/(?<!\..*)(\d)(?=(?:\d{3})+(?:\.|$))/g, "$1 ");
+
+// eemaldab tühikud numbrist
+const removeSpaces = (num) => num.toString().replace(/\s/g, "");
 
 const App = () => {
-  const [calc, setCalc] = useState({
+  let [calc, setCalc] = useState({
     sign: "",
     num: 0,
     res: 0,
@@ -23,15 +30,15 @@ const App = () => {
     e.preventDefault();
     const value = e.target.innerHTML;
 
-    if (calc.num.length < 16) {
+    if (removeSpaces(calc.num).length < 16) {
       setCalc({
         ...calc,
         num:
           calc.num === 0 && value === "0"
             ? "0"
-            : calc.num % 1 === 0
-            ? Number(calc.num + value)
-            : calc.num + value,
+            : removeSpaces(calc.num) % 1 === 0
+            ? toLocaleString(Number(removeSpaces(calc.num + value)))
+            : toLocaleString(calc.num + value),
         res: !calc.sign ? 0 : calc.res,
       });
     }
@@ -75,7 +82,13 @@ const App = () => {
         res:
           calc.num === "0" && calc.sign === "/"
             ? "Can't divide with 0"
-            : math(Number(calc.res), Number(calc.num), calc.sign),
+            : toLocaleString(
+                math(
+                  Number(removeSpaces(calc.res)),
+                  Number(removeSpaces(calc.num)),
+                  calc.sign
+                )
+              ),
         sign: "",
         num: 0,
       });
@@ -85,15 +98,15 @@ const App = () => {
   const invertClickHandler = () => {
     setCalc({
       ...calc,
-      num: calc.num ? calc.num * -1 : 0,
-      res: calc.res ? calc.res * -1 : 0,
+      num: calc.num ? toLocaleString(removeSpaces(calc.num) * -1) : 0,
+      res: calc.res ? toLocaleString(removeSpaces(calc.res) * -1) : 0,
       sign: "",
     });
   };
 
   const percentClickHandler = () => {
-    let num = calc.num ? parseFloat(calc.num) : 0;
-    let res = calc.res ? parseFloat(calc.res) : 0;
+    let num = calc.num ? parseFloat(removeSpaces(calc.num)) : 0;
+    let res = calc.res ? parseFloat(removeSpaces(calc.res)) : 0;
 
     setCalc({
       ...calc,
@@ -105,6 +118,7 @@ const App = () => {
 
   const resetClickHandler = () => {
     setCalc({
+      ...calc,
       sign: "",
       num: 0,
       res: 0,
